@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>THREE.JS</title>
+
+<link rel='stylesheet' href="https://rawgit.com/domitry/elegans/master/examples/common.css">
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min.js"></script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min.js"></script>
+<script type="text/javascript" src="js/libs/jquery-3.3.1.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+    }
+    #vis {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+    }
+
+</style>
+
+<body>
+
+<canvas id="vis"></canvas>
+<div id='tooltip' style='visibility: visible; position: absolute; top: 10px; left: 10px; color: white; font-family:sans-serif'>ha-ha</div>
+
+<script type="module">
+    import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
+    import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/controls/OrbitControls.js';
+
+
+
+    function hexToRgb(hex) { //TODO rewrite with vector output
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    const canvas = document.querySelector('#vis');
+    const renderer = new THREE.WebGLRenderer({canvas});
+    renderer.autoClearColor = false;
+
+
+    var w = 1800;
+    var h = 880;
+    const fov = 50;
+    const aspect = 4;  // the canvas default
+    const near = 1;
+    const far = 500;
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    const controls = new OrbitControls(camera, canvas);
+
+    camera.position.set( 0, 0, -600);
+    controls.update();
+
+    const scene = new THREE.Scene();
+
+    var INTERSECTED;
+    var mouse = new THREE.Vector2();
+
+
+    function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+
+    /* скатерплот */
+    var scatterPlot = new THREE.Object3D();
+    scatterPlot.rotation.y = 0;
+    scene.add(scatterPlot);
+
+
+    var unfiltered = [];
+
+    var format = d3.format("+.3f");
+    var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+    d3.csv("data/radio_images.csv", function (d) {
+
+        d.forEach(function (d, i) {
+             unfiltered[i] = {
+                x: Math.random() * 500,
+                y: Math.random() * 500,
+                z: Math.random() * 500,
+                artist: d.artist,
+                img: d.img,
+                audio: d.audio
+            };
+
+        });
+
+        var xExent = d3.extent(unfiltered, function (d) {return d.x; }),
+                yExent = d3.extent(unfiltered, function (d) {return d.y; }),
+                zExent = d3.extent(unfiltered, function (d) {return d.z; });
+
+        var colour = d3.scale.category20c();
+        var xScale = d3.scale.linear()
+                .domain(xExent)
+                .range([-50,50]);
+        var yScale = d3.scale.linear()
+                .domain(yExent)
+                .range([-50,50]);
+        var zScale = d3.scale.linear()
+                .domain([0, 1000])
+                .range([-500,500]);
+
+
+//        var src = "img/pic.jpg";
+
+//        var mat = new THREE.PointsMaterial({
+//            //blending: THREE.AdditiveBlending,
+//            map: new THREE.TextureLoader().load(src),
+//            //transparent: false,
+//            depthWrite: false,
+//            //vertexColors: true,
+//            size: 10
+//        });
+
+
+       /* TRY BUFFER GEOMETRY   */
+        var color = new THREE.Color();
+
+        /* я богиня!!!!! оцей шматок зашиває дані в обʼєкти!!!! */
+        function makeInstance(geometry, artist, img, audio) {
+
+            var mat = new THREE.PointsMaterial({
+                //blending: THREE.AdditiveBlending,
+                map: new THREE.TextureLoader().load(img),
+                transparent: false,
+                depthWrite: false,
+                //vertexColors: true,
+                size: 20
+            });
+
+            var instance = new THREE.ParticleSystem( geometry, mat );
+
+            instance.userData = {
+                audio: audio, artist: artist, img: img
+            };
+
+            scatterPlot.add(instance);
+            return instance;
+        }
+
+        unfiltered.forEach(function(d, i) {
+            var pointGeo = new THREE.BufferGeometry();
+
+            var coords = [];
+            var colors = [];
+            let x = xScale(d.x);
+            let y = yScale(d.y);
+            let z = zScale(d.z);
+            coords.push(x, y, z);
+
+
+
+            let vx = hexToRgb(colour(i)).r / 255;
+            let vy = hexToRgb(colour(i)).g / 255;
+            let vz = hexToRgb(colour(i)).b / 255;
+            color.setRGB( vx, vy, vz );
+            colors.push( color.r, color.g, color.b );
+
+            var vertices = new Float32Array(coords);
+            pointGeo.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+            pointGeo.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ));
+
+            makeInstance(pointGeo, d.artist, d.img, d.audio)
+
+        });
+
+        function disposeArray() {
+            this.array = null;
+        }
+
+
+        //var vertices = new Float32Array(coords);
+       //pointGeo.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+        //pointGeo.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ).onUpload( disposeArray ) );
+
+
+        //var mesh = new THREE.ParticleSystem( pointGeo, mat );
+        //mesh.userData.tooltipText = artists;
+        //console.log(pointGeo);
+        //scatterPlot.add(mesh);
+
+
+
+        /* TRY SIMPLE GEOMETRY */
+//        var pointGeo = new THREE.Geometry();
+//        for (var i = 0; i < pointCount; i ++) {
+//            var x = xScale(unfiltered[i].x);
+//            var y = yScale(unfiltered[i].y);
+//            var z = zScale(unfiltered[i].z);
+//            pointGeo.vertices.push(new THREE.Vector3(x, y, z));
+//            pointGeo.colors.push(new THREE.Color().setRGB(
+//                   hexToRgb(colour(i)).r / 255, hexToRgb(colour(i)).g / 255, hexToRgb(colour(i)).b / 255
+//            ));
+//        }
+//        console.log(pointGeo);
+//
+//
+//        var points = new THREE.ParticleSystem(pointGeo, mat);
+//        points.userData.tooltipText = "ha-ha-ha";
+//        scatterPlot.add(points);
+
+
+
+
+
+        renderer.render(scene, camera);
+        var down = false;
+        var sx = 0,  sy = 0;
+
+        window.onmousedown = function(ev) {
+            down = true;
+            sx = ev.clientX;
+            sy = ev.clientY;
+        };
+        window.onmouseup = function() {
+            down = false;
+        };
+        window.onmousemove = function(ev) {
+            if (down) {
+                var dx = ev.clientX - sx;
+                var dy = ev.clientY - sy;
+                scatterPlot.rotation.y += dx * 0.01;
+                camera.position.y += dy;
+                sx += dx;
+                sy += dy;
+            }
+        };
+
+
+
+
+
+
+
+
+        var raycaster = new THREE.Raycaster();
+
+
+        function onMouseMove(event) {
+            /* отут тултіпи */
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(scatterPlot.children);
+            var tooltip = document.getElementById('tooltip');
+
+            if (intersects[0]) {
+                if (intersects[0]) {
+                    //console.log(intersects[0].object.userData);
+                    tooltip.innerHTML = intersects[0].object.userData.audio;
+                    tooltip.style.visibility = 'visible';
+                    tooltip.style.top = event.clientY + 'px';
+                    tooltip.style.left = event.clientX + 5 + 'px';
+                } else {
+                    tooltip.style.visibility = 'hidden';
+                }
+            } else {
+                tooltip.style.visibility = 'hidden';
+            }
+        }
+
+        window.addEventListener( 'mousemove', onMouseMove );
+
+
+
+        function render() {
+            if (resizeRendererToDisplaySize(renderer)) {
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+            }
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+    });
+
+</script>
+</body>
