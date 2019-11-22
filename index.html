@@ -3,7 +3,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>THREE.JS</title>
+<title>THREE try</title>
 
 <link rel='stylesheet' href="https://rawgit.com/domitry/elegans/master/examples/common.css">
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min.js"></script>-->
@@ -32,8 +32,32 @@
     import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/controls/OrbitControls.js';
 
 
+    var w = 1800;
+    var h = 880;
+    const fov = 50;
+    const aspect = 4;
+    const near = 1;
+    const far = 500;
 
-    function hexToRgb(hex) { //TODO rewrite with vector output
+    const canvas = document.querySelector('#vis');
+    const renderer = new THREE.WebGLRenderer({canvas});
+    renderer.autoClearColor = false;
+
+    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    camera.position.set( 0, 0, -600);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.update();
+
+    const scene = new THREE.Scene();
+
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+
+
+
+
+    function hexToRgb(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
             r: parseInt(result[1], 16),
@@ -41,28 +65,6 @@
             b: parseInt(result[3], 16)
         } : null;
     }
-
-    const canvas = document.querySelector('#vis');
-    const renderer = new THREE.WebGLRenderer({canvas});
-    renderer.autoClearColor = false;
-
-
-    var w = 1800;
-    var h = 880;
-    const fov = 50;
-    const aspect = 4;  // the canvas default
-    const near = 1;
-    const far = 500;
-    const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    const controls = new OrbitControls(camera, canvas);
-
-    camera.position.set( 0, 0, -600);
-    controls.update();
-
-    const scene = new THREE.Scene();
-
-    var INTERSECTED;
-    var mouse = new THREE.Vector2();
 
 
     function resizeRendererToDisplaySize(renderer) {
@@ -85,16 +87,16 @@
 
     var unfiltered = [];
 
-    var format = d3.format("+.3f");
-    var parseDate = d3.time.format("%Y-%m-%d").parse;
+//    var format = d3.format("+.3f");
+//    var parseDate = d3.time.format("%Y-%m-%d").parse;
 
     d3.csv("data/radio_images.csv", function (d) {
 
         d.forEach(function (d, i) {
              unfiltered[i] = {
-                x: Math.random() * 500,
-                y: Math.random() * 500,
-                z: Math.random() * 500,
+                x: Math.random() * 200,
+                y: Math.random() * 200,
+                z: Math.random() * 200,
                 artist: d.artist,
                 img: d.img,
                 audio: d.audio
@@ -118,17 +120,6 @@
                 .range([-500,500]);
 
 
-//        var src = "img/pic.jpg";
-
-//        var mat = new THREE.PointsMaterial({
-//            //blending: THREE.AdditiveBlending,
-//            map: new THREE.TextureLoader().load(src),
-//            //transparent: false,
-//            depthWrite: false,
-//            //vertexColors: true,
-//            size: 10
-//        });
-
 
        /* TRY BUFFER GEOMETRY   */
         var color = new THREE.Color();
@@ -142,7 +133,7 @@
                 transparent: false,
                 depthWrite: false,
                 //vertexColors: true,
-                size: 20
+                size: 10
             });
 
             var instance = new THREE.ParticleSystem( geometry, mat );
@@ -184,18 +175,6 @@
         function disposeArray() {
             this.array = null;
         }
-
-
-        //var vertices = new Float32Array(coords);
-       //pointGeo.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-        //pointGeo.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ).onUpload( disposeArray ) );
-
-
-        //var mesh = new THREE.ParticleSystem( pointGeo, mat );
-        //mesh.userData.tooltipText = artists;
-        //console.log(pointGeo);
-        //scatterPlot.add(mesh);
-
 
 
         /* TRY SIMPLE GEOMETRY */
@@ -246,13 +225,6 @@
 
 
 
-
-
-
-
-        var raycaster = new THREE.Raycaster();
-
-
         function onMouseMove(event) {
             /* отут тултіпи */
             mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -264,8 +236,8 @@
 
             if (intersects[0]) {
                 if (intersects[0]) {
-                    //console.log(intersects[0].object.userData);
-                    tooltip.innerHTML = intersects[0].object.userData.audio;
+                    console.log(intersects[0].object.userData.audio);
+                    tooltip.innerHTML = intersects[0].object.userData.artist;
                     tooltip.style.visibility = 'visible';
                     tooltip.style.top = event.clientY + 'px';
                     tooltip.style.left = event.clientX + 5 + 'px';
