@@ -5,24 +5,26 @@
 
 <title>THREE try</title>
 
-<link rel='stylesheet' href="https://rawgit.com/domitry/elegans/master/examples/common.css">
+<!--<link rel='stylesheet' href="https://rawgit.com/domitry/elegans/master/examples/common.css">-->
+<link rel="preload" href="https://fonts.googleapis.com/css?family=Kaushan+Script&display=swap" as="style">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kaushan+Script&display=swap" as="font">
+
+<link rel='stylesheet' href="css/styles.css">
+
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min.js"></script>-->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min.js"></script>
 <script type="text/javascript" src="js/libs/jquery-3.3.1.min.js"></script>
 
 <style>
-    body {
-        margin: 0;
-    }
-    #vis {
-        width: 100vw;
-        height: 100vh;
-        display: block;
-    }
+
 
 </style>
 
 <body>
+
+<div id="title">
+    <h1>APRIZE-2019</h1>
+</div>
 
 <canvas id="vis"></canvas>
 <div id='tooltip' style='visibility: visible; position: absolute; top: 10px; left: 10px; color: white; font-family:sans-serif'>ha-ha</div>
@@ -40,7 +42,7 @@
     const far = 500;
 
     const canvas = document.querySelector('#vis');
-    const renderer = new THREE.WebGLRenderer({canvas});
+    const renderer = new THREE.WebGLRenderer({canvas, alpha:true });
     renderer.autoClearColor = false;
 
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
