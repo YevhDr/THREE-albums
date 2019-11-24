@@ -94,11 +94,11 @@
 
         d.forEach(function (d, i) {
              unfiltered[i] = {
-                x: Math.random() * 200,
-                y: Math.random() * 200,
-                z: Math.random() * 200,
+                x: Math.random() * 400,
+                y: Math.random() * 400,
+                z: Math.random() * 400,
                 artist: d.artist,
-                img: d.img,
+                img: "img/" + d.img_local,
                 audio: d.audio
             };
 
@@ -133,7 +133,7 @@
                 transparent: false,
                 depthWrite: false,
                 //vertexColors: true,
-                size: 10
+                size: 15
             });
 
             var instance = new THREE.ParticleSystem( geometry, mat );
