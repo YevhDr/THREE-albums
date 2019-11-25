@@ -30,3 +30,15 @@ h1 {
   }
 }
 
+#tooltip {
+  visibility: visible;
+  position: absolute;
+  top: 10px;
+  left: 40px;
+  color: black;
+  font-family: "Roboto", sans-serif;
+  font-size: 18px;
+  //font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+

@@ -27,7 +27,7 @@
 </div>
 
 <canvas id="vis"></canvas>
-<div id='tooltip' style='visibility: visible; position: absolute; top: 10px; left: 10px;  color: red; font-family:sans-serif'>ha-ha</div>
+<div id='tooltip' style=''></div>
 
 <script type="module">
     import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
@@ -56,7 +56,20 @@
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
 
-
+    var arr = ['http://topotopo.io/',
+        'https://panic.com/transmit/',
+        'http://www.larsberg.net/',
+        'http://www.robertadicamerino.com/',
+        'https://tonite.dance/',
+        'https://moments.epic.net/',
+        'http://www.welcometofillory.com/map',
+        'http://www.veilhymn.com/',
+        'http://swissarmyman.com/',
+        'https://aframe.io/',
+        'http://www.dennis.video/',
+        'http://a-way-to-go.com/',
+        'http://www.simonreeves.com/projects/db5/'
+    ];
 
 
     function hexToRgb(hex) {
@@ -141,7 +154,7 @@
             var instance = new THREE.ParticleSystem( geometry, mat );
 
             instance.userData = {
-                audio: audio, artist: artist, img: img
+                audio: audio, artist: artist, img: img, URL: "https://aprize.com.ua/"
             };
 
             scatterPlot.add(instance);
@@ -210,19 +223,21 @@
             sx = ev.clientX;
             sy = ev.clientY;
         };
+
         window.onmouseup = function() {
             down = false;
         };
-        window.onmousemove = function(ev) {
-            if (down) {
-                var dx = ev.clientX - sx;
-                var dy = ev.clientY - sy;
-                scatterPlot.rotation.y += dx * 0.01;
-                camera.position.y += dy;
-                sx += dx;
-                sy += dy;
-            }
-        };
+
+//        window.onmousemove = function(ev) {
+//            if (down) {
+//                var dx = ev.clientX - sx;
+//                var dy = ev.clientY - sy;
+//                scatterPlot.rotation.y += dx * 0.01;
+//                camera.position.y += dy;
+//                sx += dx;
+//                sy += dy;
+//            }
+//        };
 
 
 
@@ -242,16 +257,39 @@
                     tooltip.innerHTML = intersects[0].object.userData.artist;
                     tooltip.style.visibility = 'visible';
                     tooltip.style.top = event.clientY + 'px';
-                    tooltip.style.left = event.clientX + 5 + 'px';
+                    tooltip.style.left = event.clientX + 15 + 'px';
+                    d3.select('body').style('cursor', 'pointer');
                 } else {
                     tooltip.style.visibility = 'hidden';
                 }
             } else {
+                d3.select('body').style('cursor', 'default');
                 tooltip.style.visibility = 'hidden';
             }
         }
 
+        function onDocumentMouseDown(event) {
+
+            //event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            //raycaster.setFromCamera(mouse, camera);
+
+            var intersects = raycaster.intersectObjects(scatterPlot.children);
+            if (intersects.length > 0) {
+
+                window.open(intersects[0].object.userData.URL);
+                intersects[0].onmouseup();
+            } else {
+
+            }
+
+
+        }
+
         window.addEventListener( 'mousemove', onMouseMove );
+        document.addEventListener( 'click', onDocumentMouseDown, false );
 
 
 
