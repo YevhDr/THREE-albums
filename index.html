@@ -60,21 +60,6 @@
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
 
-    var arr = ['http://topotopo.io/',
-        'https://panic.com/transmit/',
-        'http://www.larsberg.net/',
-        'http://www.robertadicamerino.com/',
-        'https://tonite.dance/',
-        'https://moments.epic.net/',
-        'http://www.welcometofillory.com/map',
-        'http://www.veilhymn.com/',
-        'http://swissarmyman.com/',
-        'https://aframe.io/',
-        'http://www.dennis.video/',
-        'http://a-way-to-go.com/',
-        'http://www.simonreeves.com/projects/db5/'
-    ];
-
 
     function hexToRgb(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -151,7 +136,7 @@
                 map: new THREE.TextureLoader().load(img),
                 transparent: false,
                 depthWrite: false,
-                //vertexColors: true,
+                //vertexColors: true,  //якщо потрібен колір
                 size: 15
             });
 
@@ -219,18 +204,18 @@
 
 
         renderer.render(scene, camera);
-        var down = false;
-        var sx = 0,  sy = 0;
-
-        window.onmousedown = function(ev) {
-            down = true;
-            sx = ev.clientX;
-            sy = ev.clientY;
-        };
-
-        window.onmouseup = function() {
-            down = false;
-        };
+//        var down = false;
+//        var sx = 0,  sy = 0;
+//
+//        window.onmousedown = function(ev) {
+//            down = true;
+//            sx = ev.clientX;
+//            sy = ev.clientY;
+//        };
+//
+//        window.onmouseup = function() {
+//            down = false;
+//        };
 
 //        window.onmousemove = function(ev) {
 //            if (down) {
