@@ -301,15 +301,12 @@
         requestAnimationFrame(render);
     });
 
-</script>
+    THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
+        if (loaded === total) {
+            jQuery('#loading').fadeOut(1000);
+        }
 
-<script>
-//    jQuery(document).ready(function() {
-//        jQuery('#loading').fadeOut(4000);
-//    });
+    };
 
-    setTimeout(function() {
-        jQuery('#loading').fadeOut(4000);
-    }, 1200);
 </script>
 </body>
