@@ -301,6 +301,8 @@
         requestAnimationFrame(render);
     });
 
+
+    /* Детектить, чи всі текстури завантажились*/
     THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
         if (loaded === total) {
             jQuery('#loading').fadeOut(1000);
