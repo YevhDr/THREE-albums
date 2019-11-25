@@ -34,4 +34,16 @@ h1 {
   font-size: 18px;
   background-color: rgba(255, 255, 255, 0.8); }
 
+.hint {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  width: 100%;
+  display: flex; }
+  .hint p {
+    margin: auto;
+    z-index: 10000000;
+    font-size: 25px;
+    font-family: 'Kaushan Script', cursive; }
+
 /*# sourceMappingURL=styles.css.map */
