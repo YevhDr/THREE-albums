@@ -7,6 +7,7 @@
 
 <link rel="preload" href="https://fonts.googleapis.com/css?family=Kaushan+Script&display=block" as="style">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kaushan+Script&display=block" as="font">
+<link href="https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i&display=swap&subset=cyrillic" rel="stylesheet">
 <link rel='stylesheet' href="css/styles.css">
 
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min.js"></script>-->
@@ -35,19 +36,57 @@
 <div id='tooltip' style=''></div>
 
 <div class="hint">
-    <p>Scroll to explore</p>
+    <p>Scroll UP to explore</p>
 </div>
+<!--<div class="read-more">-->
+    <!--<p>До статті</p>-->
+<!--</div>-->
+
+<audio id="audio">
+    <source src="audio/example.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+</audio>
+
+<div id="player">
+    <img src="img/others/play.svg"/>
+    <p id="playing-now"><span id="artist"></span>  <span id="song"></span></p>
+</div>
+
+<article>
+    <p>Команда «Радіо Аристократи» відшукала і прослухала всі українські релізи 2018-го року та визначила претендентів на музичну премію (А) PRIZE за найкращий повноформатний альбом. Texty.org.ua візуалізували зібрану інформацію.</p>
+
+    <p>Якби кожен нардеп вирішив упродовж року побути музикантом та записати власний альбом (звісно, репчик, звісно, про соціалочку), то кількість їхніх творінь не набагато перевищувала б загальну кількість релізів українських музикантів за 2018-й: 416 альбомів. Це вагоме досягнення для сучасної української музичної індустрії, за трансформаціями якої так цікаво спостерігати в останні роки.</p>
+
+    <p>(А) PRIZE — музична премія радіоподкастингової компанії «Радіо Аристократи», започаткована у 2016-му групою авторитетних експертів у галузі сучасної української музики з метою щорічного моніторингу та визначення найкращих альбомів, які створюються та ідентифікуються авторами як українські.</p>
+
+    <p>Щоб обрати найкращих, «Радіо Аристократи» сформувало базу з понад 900 виконавців або гуртів — це в середньому два представники на кожне українське місто. Щоби познайомитися з усіма релізами, знадобиться майже тиждень беззупиного прослуховування — обережно! Можуть виникнути побічні ефекти та звикання.</p>
+
+    <p>Із 63-ма авторами можна було познайомитися в прямих ефірах та на спеціальних подіях від «Радіо Аристократи» (livestage Ранкового Шоу, Музика Даші Коломієць, btw Ніла Тарасова, Джаз з Олексієм Коганом, Bedstocklive). Ці відеоматеріали завжди можна знайти за посиланням.</p>
+
+    <p>У 2018-му більшість артистів співала українською (ура!). Таких альбомів є 74, ще в 52-х можна почути гарну (щоправда, часом і жахливу) англійську. У 46-х альбомах виконавці передавали свої послання світу суто музикою, без слів, а в 39 — є поєднання англійської, російської, французької та української. Найменше альбомів — 31 — російськомовних.</p>
+
+    <p>Для Сергія Бабкіна та гуртів KID — S і Fontaliza минулорічні альбоми стали першими україномовними за всю кар’єру артистів.</p>
+
+    <p>Ми знайомилися із новачками музичної індустрії. Для 94-х артистів повноформатні альбоми стали дебютним релізом або ж першою роботою із форматом long play (майже 40 % від усього матеріалу 2018 року).</p>
+
+</article>
+
 
 <script type="module">
     import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
     import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/controls/OrbitControls.js';
+
+    var audio = document.getElementById("audio");
+    var tooltip = document.getElementById('tooltip');
+    var nowPlaying = false;
+
 
 
     var w = 1800;
     var h = 880;
     const fov = 50;
     const aspect = 4;
-    const near = 1;
+    const near = 3;
     const far = 500;
 
     const canvas = document.querySelector('#vis');
@@ -59,12 +98,13 @@
 
     const controls = new OrbitControls(camera, canvas);
     controls.update();
+    controls.minDistance = 150;
+    controls.maxDistance = 600;
+
 
     const scene = new THREE.Scene();
-
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
-
 
     function hexToRgb(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -93,11 +133,7 @@
     scatterPlot.rotation.y = 0;
     scene.add(scatterPlot);
 
-
     var unfiltered = [];
-
-//    var format = d3.format("+.3f");
-//    var parseDate = d3.time.format("%Y-%m-%d").parse;
 
     d3.csv("data/radio_images.csv", function (d) {
 
@@ -135,7 +171,6 @@
 
         /* я богиня!!!!! оцей шматок зашиває дані в обʼєкти!!!! */
         function makeInstance(geometry, artist, img, audio) {
-
             var mat = new THREE.PointsMaterial({
                 //blending: THREE.AdditiveBlending,
                 map: new THREE.TextureLoader().load(img),
@@ -144,28 +179,20 @@
                 //vertexColors: true,  //якщо потрібен колір
                 size: 15
             });
-
             var instance = new THREE.ParticleSystem( geometry, mat );
-
-            instance.userData = {
-                audio: audio, artist: artist, img: img, URL: "https://aprize.com.ua/"
-            };
-
+            instance.userData = { audio: audio, artist: artist, img: img, URL: "https://aprize.com.ua/" };
             scatterPlot.add(instance);
             return instance;
         }
 
         unfiltered.forEach(function(d, i) {
             var pointGeo = new THREE.BufferGeometry();
-
             var coords = [];
             var colors = [];
             let x = xScale(d.x);
             let y = yScale(d.y);
             let z = zScale(d.z);
             coords.push(x, y, z);
-
-
 
             let vx = hexToRgb(colour(i)).r / 255;
             let vy = hexToRgb(colour(i)).g / 255;
@@ -175,7 +202,7 @@
 
             var vertices = new Float32Array(coords);
             pointGeo.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-            pointGeo.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ));
+            //pointGeo.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ));
 
             makeInstance(pointGeo, d.artist, d.img, d.audio)
 
@@ -209,6 +236,8 @@
 
 
         renderer.render(scene, camera);
+
+
 //        var down = false;
 //        var sx = 0,  sy = 0;
 //
@@ -234,47 +263,80 @@
 //        };
 
 
+        /* прокрутка до початку тексту*/
+        $(".read-more").on("click", function() {
+            $([document.documentElement, document.body]).animate({ scrollTop: $("article").offset().top}, 1000);//
+        });
 
+        d3.select("#player img").on("click", function() {
+            if(nowPlaying){
+                audio.pause();
+                d3.select(this).attr("src", "img/others/play.svg").attr("id", "play");
+                nowPlaying = false;
+            } else {
+                audio.play();
+                d3.select(this).attr("src", "img/others/pause.svg").attr("id", "pause");
+                nowPlaying = true;
+            }
+
+
+
+        });
 
         function onMouseMove(event) {
             /* отут тултіпи */
-            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+//            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+//            mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+
+            var rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
+            mouse.y = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
+
 
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scatterPlot.children);
-            var tooltip = document.getElementById('tooltip');
 
             if (intersects[0]) {
                 if (intersects[0]) {
                     console.log(intersects[0].object.userData.audio);
-                    tooltip.innerHTML = intersects[0].object.userData.artist;
+                    tooltip.innerHTML =  "<img src='img/others/play_tooltip.svg' style='width: 30px;'/>";
+
+
+                    //tooltip.innerHTML = intersects[0].object.userData.artist;
                     tooltip.style.visibility = 'visible';
-                    tooltip.style.top = event.clientY + 'px';
-                    tooltip.style.left = event.clientX + 15 + 'px';
+                    tooltip.style.top = event.clientY - 15 +  'px';
+                    tooltip.style.left = event.clientX - 15 + 'px';
                     d3.select('body').style('cursor', 'pointer');
                 } else {
                     tooltip.style.visibility = 'hidden';
                 }
-            } else {
+            }
+            else {
                 d3.select('body').style('cursor', 'default');
                 tooltip.style.visibility = 'hidden';
             }
         }
 
         function onDocumentMouseDown(event) {
-
-            //event.preventDefault();
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            //raycaster.setFromCamera(mouse, camera);
+            event.preventDefault();
+            var rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
+            mouse.y = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
+            raycaster.setFromCamera( mouse, camera );
 
             var intersects = raycaster.intersectObjects(scatterPlot.children);
-            if (intersects.length > 0) {
+            //d3.select('audio').attr("src", "audio/....");
 
-                window.open(intersects[0].object.userData.URL);
-                intersects[0].onmouseup();
+
+
+            if (intersects.length > 0) {
+//                window.open(intersects[0].object.userData.URL);
+//                intersects[0].onmouseup();
+                d3.select('#player img').attr("src", "img/others/pause.svg").attr("id", "pause");
+                d3.select('#artist').html(intersects[0].object.userData.artist);
+                d3.select('#song').html(intersects[0].object.userData.audio);
+                audio.play();
+                nowPlaying = true;
             } else {
 
             }
@@ -296,6 +358,7 @@
             renderer.render(scene, camera);
             requestAnimationFrame(render);
         }
+
         requestAnimationFrame(render);
     });
 
@@ -305,8 +368,23 @@
         if (loaded === total) {
             jQuery('#loading').fadeOut(1000);
         }
-
     };
+
+
+    /* ця штука детектить zoom, який фактично є не зумом, а зміною позиції камери*/
+    function onPositionChange(o) {
+        console.log("position changed in object");
+        var zoom = controls.target.distanceTo( controls.object.position );
+        console.log(zoom);
+//        if(zoom === 150){
+//            controls.enableZoom = false;
+//        }
+    }
+
+    controls.addEventListener('change', onPositionChange);
+
+
+
 
 </script>
 </body>

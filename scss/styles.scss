@@ -1,12 +1,16 @@
+* {
+  outline: none;
+}
+
 body {
   margin:0;
   padding:0;
   font-family: 'Kaushan Script', cursive;
-
 }
 
 #vis {
-  width: 100vw;
+  width: 90vw;
+  margin: auto;
   height: 100vh;
   display: block;
 }
@@ -39,15 +43,15 @@ h1 {
   font-family: "Roboto", sans-serif;
   font-size: 18px;
   //font-weight: bold;
-  background-color: rgba(255, 255, 255, 0.8);
+  //background-color: rgba(255, 255, 255, 0.8);
 }
 
 .hint {
   position: absolute;
-  bottom: 5px;
-  left: 0;
-  width: 100%;
   display: flex;
+  width: 100%;
+  left: 0;
+  bottom: 40px;
 
   p {
     margin: auto;
@@ -56,4 +60,51 @@ h1 {
     font-family: 'Kaushan Script', cursive;
   }
 }
+
+
+.read-more {
+  font-family: 'PT Sans', sans-serif;
+  position: absolute;
+  display: flex;
+  width: max-content;
+  top: 10px;
+  right: 10px;
+  cursor:pointer;
+  p {
+    margin: auto;
+    z-index: 10000000;
+    font-size: 25px;
+    //font-family: 'Kaushan Script', cursive;
+  }
+}
+
+.hint2 p:hover {
+  border-bottom: 2px dashed red;
+}
+
+#player {
+  font-family: 'PT Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+
+  img {
+    width: 30px;
+    margin-right: 10px;
+  }
+}
+
+article {
+  font-size: 18px;
+  line-height: 1.6;
+  font-family: 'PT Sans', sans-serif;
+  height: 100vh;
+  width: 90%;
+  max-width: 1000px;
+  margin: 100px auto;
+}
+
+
 
