@@ -83,6 +83,7 @@ h1 {
 }
 
 #player {
+  background-color: white;
   font-family: 'PT Sans', sans-serif;
   display: flex;
   align-items: center;
@@ -91,8 +92,13 @@ h1 {
   left: 10px;
 
   img {
-    width: 30px;
+    width: 60px;
     margin-right: 10px;
+
+    transition: all 1s;
+  }
+
+  #artist {
   }
 }
 

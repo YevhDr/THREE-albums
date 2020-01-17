@@ -67,6 +67,7 @@ h1 {
   border-bottom: 2px dashed red; }
 
 #player {
+  background-color: white;
   font-family: 'PT Sans', sans-serif;
   display: flex;
   align-items: center;
@@ -74,8 +75,9 @@ h1 {
   top: 10px;
   left: 10px; }
   #player img {
-    width: 30px;
-    margin-right: 10px; }
+    width: 60px;
+    margin-right: 10px;
+    transition: all 1s; }
 
 article {
   font-size: 18px;
