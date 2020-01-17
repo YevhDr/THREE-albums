@@ -36,7 +36,7 @@
 <div id='tooltip' style=''></div>
 
 <div class="hint">
-    <p>Scroll UP to explore</p>
+    <p>Scroll to explore</p>
 </div>
 <div class="read-more">
     <!--<p>До статті</p>-->
@@ -50,7 +50,7 @@
 <div id="player">
     <img id="howto" src="img/others/myicon.png"/>
     <!--<img id= "play-pause" src="img/others/myicon.png"/>-->
-    <p id="playing-now"><span id="artist">клікніть на обкладинку</span><span id="song"></span><br>
+    <p id="playing-now"><span id="artist">Клікніть на обкладинку</span><span id="song"></span><br>
     <!--<span><b>Ви передивляєтесь: </b></span><span id="select-artist"></span>-->
     </p>
 </div>
@@ -100,7 +100,7 @@
     renderer.autoClearColor = false;
 
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set( 0, 0, -600);
+    camera.position.set( 0, 0, -650);
 
     const controls = new OrbitControls(camera, canvas);
     controls.update();

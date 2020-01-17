@@ -8,8 +8,8 @@ body {
 
 #vis {
   width: 90vw;
-  margin: auto;
   height: 100vh;
+  margin: auto;
   display: block; }
 
 #title {
