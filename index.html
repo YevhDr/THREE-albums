@@ -43,16 +43,16 @@
 </div>
 
 <audio id="audio">
-    <source src="audio/example.mp3" type="audio/mp3">
+    <source src="" type="audio/mp3">
     Your browser does not support the audio element.
 </audio>
 
 <div id="player">
-    <img id="howto" src="img/others/myicon.png"/>
-    <!--<img id= "play-pause" src="img/others/myicon.png"/>-->
-    <p id="playing-now"><span id="artist">Клікніть на будь-яку обкладинку</span><span id="song"></span><br>
-    <!--<span><b>Ви передивляєтесь: </b></span><span id="select-artist"></span>-->
-    </p>
+    <!--<img id="howto" src="img/others/myicon.png"/>-->
+    <!--&lt;!&ndash;<img id= "play-pause" src="img/others/myicon.png"/>&ndash;&gt;-->
+    <!--<p id="playing-now"><span id="artist">Клікніть на будь-яку обкладинку</span><span id="song"></span><br>-->
+    <!--&lt;!&ndash;<span><b>Ви передивляєтесь: </b></span><span id="select-artist"></span>&ndash;&gt;-->
+    <!--</p>-->
 </div>
 
 
@@ -79,24 +79,30 @@
 
 
 <script type="module">
-    import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
-    import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/controls/OrbitControls.js';
+    import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r113/build/three.module.js';
+    import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r113/examples/jsm/controls/OrbitControls.js';
+
+    console.clear();
 
     var audio = document.getElementById("audio");
     var tooltip = document.getElementById('tooltip');
     var nowPlaying = false;
 
+    THREE.ImageUtils.crossOrigin = ""; // це не працює, кросориджини все одно вискакують
+    var loader = new THREE.TextureLoader();
 
+    //allow cross origin loading
+    loader.setCrossOrigin('anonymous'); // не працює
 
     var w = 1800;
     var h = 880;
     const fov = 50;
     const aspect = 4;
     const near = 3;
-    const far = 500;
+    const far = 10000;
 
     const canvas = document.querySelector('#vis');
-    const renderer = new THREE.WebGLRenderer({canvas, alpha:true });
+    const renderer = new THREE.WebGLRenderer({canvas, alpha: true  }); //
     renderer.autoClearColor = false;
 
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
@@ -104,8 +110,8 @@
 
     const controls = new OrbitControls(camera, canvas);
     controls.update();
-    controls.minDistance = 150;
-    controls.maxDistance = 600;
+    controls.minDistance = 0;
+    controls.maxDistance = 650;
 
 
     const scene = new THREE.Scene();
@@ -141,16 +147,17 @@
 
     var unfiltered = [];
 
-    d3.csv("data/radio_images.csv", function (d) {
+    d3.csv("data/aprize_2020.csv", function (d) {
 
         d.forEach(function (d, i) {
              unfiltered[i] = {
-                x: Math.random() * 400,
-                y: Math.random() * 400,
-                z: Math.random() * 400,
+                x: Math.random() * 500,
+                y: Math.random() * 500,
+                z: Math.random() * 10000, //TODO привʼязати глибину до дати виходу
                 artist: d.artist,
-                img: "img/" + d.img_local,
-                audio: d.audio
+                album: d.album,
+                img: d.img,
+                track: d.track
             };
 
         });
@@ -162,12 +169,12 @@
         var colour = d3.scale.category20c();
         var xScale = d3.scale.linear()
                 .domain(xExent)
-                .range([-50,50]);
+                .range([-80,80]);
         var yScale = d3.scale.linear()
                 .domain(yExent)
                 .range([-50,50]);
         var zScale = d3.scale.linear()
-                .domain([0, 1000])
+                .domain([0, 20000])
                 .range([-500,500]);
 
 
@@ -176,18 +183,18 @@
         var color = new THREE.Color();
 
         /* я богиня!!!!! оцей шматок зашиває дані в обʼєкти!!!! */
-        function makeInstance(geometry, artist, img, audio) {
+        function makeInstance(geometry, artist, img, album, link) {
             var mat = new THREE.PointsMaterial({
                 //blending: THREE.AdditiveBlending,
-                map: new THREE.TextureLoader().load(img),
+                map: loader.load(img),
                 transparent: false,
                 depthWrite: false,
-                //vertexColors: true,  //якщо потрібен колір
-                size: 15
+//                vertexColors: true,  //якщо потрібен колір
+                size: 10
             });
 
-            var instance = new THREE.ParticleSystem( geometry, mat );
-            instance.userData = { audio: audio, artist: artist, img: img, URL: "https://aprize.com.ua/" };
+            var instance = new THREE.Points( geometry, mat );
+            instance.userData = { artist: artist, album: album, img: img, URL: link };
             scatterPlot.add(instance);
             return instance;
         }
@@ -210,8 +217,7 @@
             var vertices = new Float32Array(coords);
             pointGeo.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
             //pointGeo.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ));
-
-            makeInstance(pointGeo, d.artist, d.img, d.audio)
+            makeInstance(pointGeo, d.artist, d.img, d.album, d.track)
 
         });
 
@@ -276,20 +282,17 @@
 
         });
 
-        d3.select("#player img").on("click", function() {
-            if(nowPlaying){
-                audio.pause();
-                d3.select(this).attr("src", "img/others/play.svg").attr("id", "play");
-                nowPlaying = false;
-            } else {
-                audio.play();
-                d3.select(this).attr("src", "img/others/pause.svg").attr("id", "pause");
-                nowPlaying = true;
-            }
-
-
-
-        });
+//        d3.select("#player img").on("click", function() {
+//            if(nowPlaying){
+//                audio.pause();
+//                d3.select(this).attr("src", "img/others/play.svg").attr("id", "play");
+//                nowPlaying = false;
+//            } else {
+//                audio.play();
+//                d3.select(this).attr("src", "img/others/pause.svg").attr("id", "pause");
+//                nowPlaying = true;
+//            }
+//        });
 
         function onMouseMove(event) {
             /* отут тултіпи */
@@ -302,28 +305,32 @@
 
 
             raycaster.setFromCamera(mouse, camera);
-            var intersects = raycaster.intersectObjects(scatterPlot.children);
+            var intersects = raycaster.intersectObjects(scatterPlot.children, true);
 
-            if (intersects[0]) {
-                if (intersects[0]) {
-                    console.log(intersects[0].object.userData.audio);
-                    tooltip.innerHTML =  "<img src='img/others/play_tooltip.svg' style='width: 30px;'/>";
-
-                    //intersects[0].object.material.color.set( 0xff0000 );
-                    d3.select('#select-artist').html(intersects[0].object.userData.artist);
-
-                    //tooltip.innerHTML = intersects[0].object.userData.artist;
-                    tooltip.style.visibility = 'visible';
-                    tooltip.style.top = event.clientY - 15 +  'px';
-                    tooltip.style.left = event.clientX - 15 + 'px';
-                    d3.select('body').style('cursor', 'pointer');
-                } else {
-                    tooltip.style.visibility = 'hidden';
-                }
+            if (intersects.length > 0) {
+                d3.select('body').style('cursor', 'pointer');
             }
+
+//            if (intersects[0]) {
+//                if (intersects[0]) {
+//
+////                    tooltip.innerHTML =  "<img src='img/others/play_tooltip.svg' style='width: 30px;'/>";
+//
+//                    //intersects[0].object.material.color.set( 0xff0000 );
+////                    d3.select('#select-artist').html(intersects[0].object.userData.artist);
+//
+//                    //tooltip.innerHTML = intersects[0].object.userData.artist;
+////                    tooltip.style.visibility = 'visible';
+////                    tooltip.style.top = event.clientY - 15 +  'px';
+////                    tooltip.style.left = event.clientX - 15 + 'px';
+//
+//                } else {
+////                    tooltip.style.visibility = 'hidden';
+//                }
+//            }
             else {
                 d3.select('body').style('cursor', 'default');
-                tooltip.style.visibility = 'hidden';
+//                tooltip.style.visibility = 'hidden';
             }
         }
 
@@ -334,7 +341,7 @@
             mouse.y = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
             raycaster.setFromCamera( mouse, camera );
 
-            var intersects = raycaster.intersectObjects(scatterPlot.children);
+            var intersects = raycaster.intersectObjects(scatterPlot.children, true);
 
             //d3.select('audio').attr("src", "audio/....");
 
@@ -343,14 +350,15 @@
 
 
             if (intersects.length > 0) {
+                window.open(intersects[0].object.userData.URL);
 //                window.open(intersects[0].object.userData.URL);
 //                intersects[0].onmouseup();
-                d3.select('#player img').attr("src", "img/others/pause.svg").attr("id", "pause");
-                d3.select('#artist').html("<b>Ви слухаєте: </b><span style='text-transform: uppercase'>" +intersects[0].object.userData.artist + "</span>");
+//                d3.select('#player img').attr("src", "img/others/pause.svg").attr("id", "pause");
+//                d3.select('#artist').html("<b>Ви слухаєте: </b><span style='text-transform: uppercase'>" +intersects[0].object.userData.artist + "</span>");
                 //d3.select('#song').html(intersects[0].object.userData.audio);
                 //d3.select('audio').attr("src", "audio/example.mp3");
-                audio.play();
-                nowPlaying = true;
+//                audio.play();
+//                nowPlaying = true;
             } else {
 
             }
@@ -387,9 +395,7 @@
 
     /* ця штука детектить zoom, який фактично є не зумом, а зміною позиції камери*/
     function onPositionChange(o) {
-        console.log("position changed in object");
         var zoom = controls.target.distanceTo( controls.object.position );
-        console.log(zoom);
 //        if(zoom === 150){
 //            controls.enableZoom = false;
 //        }
