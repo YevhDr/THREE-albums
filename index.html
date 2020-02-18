@@ -36,7 +36,10 @@
 <div id='tooltip' style=''></div>
 
 <div class="hint">
-    <p>Scroll UP to explore</p>
+    <p>Scroll UP to explore<br>
+        Scroll DOWN to read
+
+    </p>
 </div>
 <div class="read-more">
     <!--<p>До статті</p>-->
@@ -396,10 +399,23 @@
     /* ця штука детектить zoom, який фактично є не зумом, а зміною позиції камери*/
     function onPositionChange(o) {
         var zoom = controls.target.distanceTo( controls.object.position );
-//        if(zoom === 150){
-//            controls.enableZoom = false;
-//        }
+        if(scrollPos === 0 && zoom > 649.9){
+            document.getElementById("vis").style['pointer-events'] = 'none';
+        }
     }
+
+
+    // Initial state
+    var scrollPos = 0;
+    // adding scroll event
+    window.addEventListener('scroll', function(){
+        // detects new state and compares it with the new one
+        if ((document.body.getBoundingClientRect()).top > scrollPos && scrollPos < 50)
+            document.getElementById("vis").style['pointer-events'] = 'all';
+        else
+            console.log("DOWN");
+        scrollPos = (document.body.getBoundingClientRect()).top;
+    });
 
     controls.addEventListener('change', onPositionChange);
 
